@@ -1,0 +1,19 @@
+https://rest-api-two-eta.vercel.app/
+
+curl -X GET https://rest-api-two-eta.vercel.app/ \
+-H "Authorization: Bearer 12345ABCDEF" \
+-H "Content-Type: application/json"
+
+curl -X GET https://rest-api-two-eta.vercel.app/mahasiswa \
+-H "Authorization: Bearer 12345ABCDEF" \
+-H "Content-Type: application/json"
+
+curl -X GET http://localhost:3000/mahasiswa \
+-H "Authorization: Bearer 12345ABCDEF" \
+-H "Content-Type: application/json"
+
+https://rest-g4350lv7d-leo42nights-projects.vercel.app/
+
+curl -X GET https://rest-g4350lv7d-leo42nights-projects.vercel.app/ \
+-H "Authorization: Bearer 12345ABCDEF" \
+-H "Content-Type: application/json"

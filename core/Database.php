@@ -18,6 +18,8 @@ class Database
         $this->username = getenv('DB_USER') ?: 'root';
         $this->password = getenv('DB_PASS') ?: '';
         $this->sslmode = getenv('DB_SSLMODE') ?: ''; // vercel pakai require
+        // getenv() hanya akan mengambil nilai dari environment variable sistem, bukan dari file .env apa pun.
+        // getenv() hanya dipakai untuk production server
     }
 
     public function connect()
