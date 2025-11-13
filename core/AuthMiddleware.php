@@ -8,7 +8,18 @@ class AuthMiddleware {
     }
 
     public function verify() {
-        $headers = getallheaders();
+        // Coba ambil header Authorization dari berbagai sumber
+        $headers = [];
+
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+        }
+
+        if (isset($_SERVER['HTTP_AUTHORIZATION'])) {
+            $headers['Authorization'] = $_SERVER['HTTP_AUTHORIZATION'];
+        } elseif (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION'])) {
+            $headers['Authorization'] = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+        }
 
         if (!isset($headers['Authorization'])) {
             $this->unauthorized("Authorization header tidak ditemukan");

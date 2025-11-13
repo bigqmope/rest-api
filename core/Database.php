@@ -1,19 +1,33 @@
 <?php
 class Database
 {
-    private $host = "localhost";
-    private $port = "3306";
-    private $db_name = "rest_api";
-    private $username = "root";
-    private $password = "";
+    private $type;
+    private $host;
+    private $port;
+    private $db_name;
+    private $username;
+    private $password;
+    private $sslmode;
     public $conn;
+
+    public function __construct() {
+        $this->type = getenv('DB_TYPE') ?: 'mysql'; // vercel pakai pgsql
+        $this->host = getenv('DB_HOST') ?: 'localhost';
+        $this->port = getenv('DB_PORT') ?: '3306';
+        $this->db_name = getenv('DB_NAME') ?: 'kampus_db';
+        $this->username = getenv('DB_USER') ?: 'root';
+        $this->password = getenv('DB_PASS') ?: '';
+        $this->sslmode = getenv('DB_SSLMODE') ?: ''; // vercel pakai require
+        // getenv() hanya akan mengambil nilai dari environment variable sistem, bukan dari file .env apa pun.
+        // getenv() hanya dipakai untuk production server
+    }
 
     public function connect()
     {
         $this->conn = null;
         try {
             $this->conn = new PDO(
-                "mysql:host={$this->host};port={$this->port};dbname={$this->db_name}",
+                "{$this->type}:host={$this->host};port={$this->port};dbname={$this->db_name};sslmode={$this->sslmode}",
                 $this->username,
                 $this->password
             );
@@ -43,14 +57,25 @@ class Database
 
     private function createTableIfNotExists()
     {
-        $sql = "
-        CREATE TABLE IF NOT EXISTS mahasiswa (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            nama VARCHAR(100) NOT NULL,
-            jurusan VARCHAR(100) NOT NULL,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-        ";
+        if ($this->type === 'pgsql') {
+            $sql = "
+            CREATE TABLE IF NOT EXISTS mahasiswa (
+                id SERIAL PRIMARY KEY,                  -- AUTO_INCREMENT versi PostgreSQL
+                nama VARCHAR(100) NOT NULL,
+                jurusan VARCHAR(100) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+            ";
+        } else {
+            $sql = "
+            CREATE TABLE IF NOT EXISTS mahasiswa (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nama VARCHAR(100) NOT NULL,
+                jurusan VARCHAR(100) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+            ";
+        }
 
         $this->conn->exec($sql);
     }
