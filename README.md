@@ -8,9 +8,11 @@ git clone https://github.com/leo42night/rest-api
 
 ## Config
 1. Install PHP & Database
-2. Run Database & PHP Server `php -S localhost:3000` (port dapat disesuaikan)
+2. Run Database & PHP Server `php -S localhost:3001` (port dapat disesuaikan)
+3. Jalankan `db.sql`
 
-## Rute Di Akses
+## Rute API
+Ini adalah beberapa rute API yang tersedia:
 ```bash
 GET / → { "message": "Koneksi success" }
 GET /mahasiswa
@@ -21,11 +23,13 @@ DELETE /mahasiswa/1
 ```
 
 ## Test API (sesuaikan path)
+Path bisa di http local, atau link https deployment (vercel). ganti aja url nya.
 
 ### Menggunakan Terminal (pakai terminal yang basis Unix: Git Bash)
 
+- POST (create) data mahasiswa baru.
 ```bash
-curl -X POST http://localhost:3000/mahasiswa \
+curl -X POST http://localhost:3001/mahasiswa \
 -H "Authorization: Bearer 12345ABCDEF" \
 -H "Content-Type: application/json" \
 -d '{
@@ -33,26 +37,34 @@ curl -X POST http://localhost:3000/mahasiswa \
   "jurusan": "Teknik Informatika"
 }'
 ```
-respon Berhasil:
+Respon Berhasil:
 ```json
 {
   "message": "Data mahasiswa berhasil ditambahkan"
 }
 ```
-Lainnya:
+API Lainnya:
+
+- GET Index halaman
 ```bash
-curl -X GET http://localhost:3000/
+curl -X GET http://localhost:3001/
 ```
+
+- GET all mahasiswas data
 ```bash
-curl -X GET http://localhost:3000/mahasiswa \
+curl -X GET http://localhost:3001/mahasiswa \
 -H "Authorization: Bearer 12345ABCDEF"
 ```
+
+- GET mahasiswa
 ```bash
-curl -X GET http://localhost:3000/mahasiswa/1 \
+curl -X GET http://localhost:3001/mahasiswa/1 \
 -H "Authorization: Bearer 12345ABCDEF"
 ```
+
+- PUT (update) mahasiswa data
 ```bash
-curl -X PUT http://localhost:3000/mahasiswa/1 \
+curl -X PUT http://localhost:3001/mahasiswa/1 \
 -H "Authorization: Bearer 12345ABCDEF" \
 -H "Content-Type: application/json" \
 -d '{
@@ -60,10 +72,13 @@ curl -X PUT http://localhost:3000/mahasiswa/1 \
   "jurusan": "Tata Boga"
 }'
 ```
+
+- DELETE mahasiswa data
 ```bash
-curl -X DELETE http://localhost:3000/mahasiswa/1 \
+curl -X DELETE http://localhost:3001/mahasiswa/1 \
 -H "Authorization: Bearer 12345ABCDEF"
 ```
+
 ### Alternatif
 - Postman (Aplikasi)
 - Thunder Client (Ekstensi VSCode)
@@ -159,7 +174,7 @@ DB_SSLMODE: require
   - Library: **libpq-12.dll**
 
 7. Test Deployment
-```
+```bash
 curl -X GET https://<url-deployment>.vercel.app/
 
 curl -X GET http://<url-deployment>.vercel.app/mahasiswa \
