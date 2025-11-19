@@ -1,8 +1,8 @@
-ATHALLAH RIZKY ERIN SAPUTRA
-FEBRIANTI KHUMAIROH
-MAS JIHAN AFRA AUZIA
-Nabil Nur Fauzan
-OLIVIA NAURA FAKHRADIKA
-REGISHA SHEREN
-TESA FIRNA ANANTA
-saskia mecca
+ATHALLAH RIZKY ERIN SAPUTRA https://rest-api-orpin-one.vercel.app/
+FEBRIANTI KHUMAIROH https://rest-api-ruddy-six.vercel.app/
+MAS JIHAN AFRA AUZIA https://rest-api-coral-ten.vercel.app/
+Nabil Nur Fauzan https://rest-api-git-vercel-kings-bilbils-projects.vercel.app/
+OLIVIA NAURA FAKHRADIKA https://rest-api-azure-five.vercel.app/
+REGISHA SHEREN http://rest-hmls1uo9e-erenorrens-projects.vercel.app/
+TESA FIRNA ANANTA https://rest-api-sigma-seven.vercel.app/
+saskia mecca http://rest-api-ruby-mu.vercel.app/
