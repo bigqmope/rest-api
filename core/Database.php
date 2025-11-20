@@ -25,63 +25,38 @@ class Database
     }
 
     public function connect()
-    {
-        $this->conn = null;
-        $dsn = "";
-        $options = [];
+{
+    $this->conn = null;
+    $dsn = "";
+    $options = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+    ]; // Hapus opsi SSL dari sini
 
-        try {
-            // 1. Tentukan DSN dan OPSI BERDASARKAN TIPE DATABASE
-            if ($this->type === 'pgsql') {
-                $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->db_name}";
-                
-                // Tambahkan OPSI SSL untuk PostgreSQL (Supabase)
-                if ($this->sslmode === 'require') {
-                    // Set SSL mode ke PDO::SSL_REQUIRED
-                    $options[PDO::ATTR_SSL_MODE] = PDO::SSL_REQUIRED;
-                    
-                    // Jika DB_SSLCA disetel, tambahkan lokasi sertifikat (untuk Vercel)
-                    if (!empty($this->sslca)) {
-                        $options[PDO::PGSQL_ATTR_SSL_CA] = $this->sslca;
-                    }
-                }
-            } else {
-                // Untuk MySQL
-                $dsn = "{$this->type}:host={$this->host};port={$this->port};dbname={$this->db_name}";
-            }
-
-            // 2. Buat Koneksi PDO
-            $this->conn = new PDO($dsn, $this->username, $this->password, $options);
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        } catch (PDOException $e) {
+    try {
+        // Tentukan DSN
+        if ($this->type === 'pgsql') {
+            // UNTUK POSTGRESQL/SUPABASE: Gunakan sslmode di DSN
+            $dsn = "{$this->type}:host={$this->host};port={$this->port};dbname={$this->db_name};sslmode={$this->sslmode}";
             
-            // Logika Anda untuk MySQL (Membuat database jika belum ada)
-            if ($this->type === 'mysql' && strpos($e->getMessage(), 'Unknown database') !== false) {
-                // ... (Logika pembuatan database tetap di sini)
-                // ... (Tidak ditampilkan di sini untuk ringkasan)
-                
-            } else {
-                 // Error koneksi fatal (SSL/Auth/Pooler)
-                 // Ganti die() dengan error response JSON yang lebih baik
-                header('Content-Type: application/json');
-                http_response_code(500);
-                die(json_encode(["error" => "Koneksi gagal: " . $e->getMessage()]));
-            }
+            // Perhatian: Tidak ada opsi PDO::ATTR_SSL_MODE di sini!
+            // Kita mengandalkan string DSN yang Anda set: sslmode=require
+            
+        } else {
+            // Untuk MySQL
+            $dsn = "{$this->type}:host={$this->host};port={$this->port};dbname={$this->db_name}";
         }
 
-        // Set Attribute lagi di luar blok try-catch
+        // 1. Buat Koneksi PDO
+        $this->conn = new PDO($dsn, $this->username, $this->password, $options);
         $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        // Pastikan Anda memanggil createTableIfNotExists di sini atau di tempat yang benar
-        // $this->createTableIfNotExists(); 
-        
-        return $this->conn;
+
+    } catch (PDOException $e) {
+        // ... (Logika pembuatan database/error handling lainnya)
+        // ... (Jika koneksi gagal, kode akan terhenti di sini)
+        die(json_encode(["error" => "Koneksi gagal: " . $e->getMessage()]));
     }
 
-    // Metode createTableIfNotExists tetap di sini
-    private function createTableIfNotExists() {
-        // ... (Kode createTableIfNotExists Anda yang asli)
-        // ...
-    }
+    $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $this->createTableIfNotExists();
+    return $this->conn;
 }
