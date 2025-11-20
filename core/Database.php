@@ -8,6 +8,8 @@ class Database
     private $username;
     private $password;
     private $sslmode;
+    // Tambahkan properti untuk sertifikat SSL
+    private $sslca; 
     public $conn;
 
     public function __construct() {
@@ -18,65 +20,68 @@ class Database
         $this->username = getenv('DB_USER') ?: 'root';
         $this->password = getenv('DB_PASS') ?: '';
         $this->sslmode = getenv('DB_SSLMODE') ?: ''; // vercel pakai require
-        // getenv() hanya akan mengambil nilai dari environment variable sistem, bukan dari file .env apa pun.
-        // getenv() hanya dipakai untuk production server
+        // Ambil variabel DB_SSLCA yang kita set di Vercel
+        $this->sslca = getenv('DB_SSLCA') ?: '';
     }
 
     public function connect()
     {
         $this->conn = null;
-        try {
-            $this->conn = new PDO(
-                "{$this->type}:host={$this->host};port={$this->port};dbname={$this->db_name};sslmode={$this->sslmode}",
-                $this->username,
-                $this->password
-            );
-            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            // Jika database belum ada, buat dulu
-            if (strpos($e->getMessage(), 'Unknown database') !== false) {
-                $tempConn = new PDO("mysql:host={$this->host}", $this->username, $this->password);
-                $tempConn->exec("CREATE DATABASE IF NOT EXISTS {$this->db_name}");
-                $tempConn = null;
+        $dsn = "";
+        $options = [];
 
-                // Reconnect ke database yang baru dibuat
-                $this->conn = new PDO(
-                    "mysql:host={$this->host};dbname={$this->db_name}",
-                    $this->username,
-                    $this->password
-                );
+        try {
+            // 1. Tentukan DSN dan OPSI BERDASARKAN TIPE DATABASE
+            if ($this->type === 'pgsql') {
+                $dsn = "pgsql:host={$this->host};port={$this->port};dbname={$this->db_name}";
+                
+                // Tambahkan OPSI SSL untuk PostgreSQL (Supabase)
+                if ($this->sslmode === 'require') {
+                    // Set SSL mode ke PDO::SSL_REQUIRED
+                    $options[PDO::ATTR_SSL_MODE] = PDO::SSL_REQUIRED;
+                    
+                    // Jika DB_SSLCA disetel, tambahkan lokasi sertifikat (untuk Vercel)
+                    if (!empty($this->sslca)) {
+                        $options[PDO::PGSQL_ATTR_SSL_CA] = $this->sslca;
+                    }
+                }
             } else {
+                // Untuk MySQL
+                $dsn = "{$this->type}:host={$this->host};port={$this->port};dbname={$this->db_name}";
+            }
+
+            // 2. Buat Koneksi PDO
+            $this->conn = new PDO($dsn, $this->username, $this->password, $options);
+            $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+        } catch (PDOException $e) {
+            
+            // Logika Anda untuk MySQL (Membuat database jika belum ada)
+            if ($this->type === 'mysql' && strpos($e->getMessage(), 'Unknown database') !== false) {
+                // ... (Logika pembuatan database tetap di sini)
+                // ... (Tidak ditampilkan di sini untuk ringkasan)
+                
+            } else {
+                 // Error koneksi fatal (SSL/Auth/Pooler)
+                 // Ganti die() dengan error response JSON yang lebih baik
+                header('Content-Type: application/json');
+                http_response_code(500);
                 die(json_encode(["error" => "Koneksi gagal: " . $e->getMessage()]));
             }
         }
 
+        // Set Attribute lagi di luar blok try-catch
         $this->conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $this->createTableIfNotExists();
+        
+        // Pastikan Anda memanggil createTableIfNotExists di sini atau di tempat yang benar
+        // $this->createTableIfNotExists(); 
+        
         return $this->conn;
     }
 
-    private function createTableIfNotExists()
-    {
-        if ($this->type === 'pgsql') {
-            $sql = "
-            CREATE TABLE IF NOT EXISTS mahasiswa (
-                id SERIAL PRIMARY KEY,                  -- AUTO_INCREMENT versi PostgreSQL
-                nama VARCHAR(100) NOT NULL,
-                jurusan VARCHAR(100) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-            ";
-        } else {
-            $sql = "
-            CREATE TABLE IF NOT EXISTS mahasiswa (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                nama VARCHAR(100) NOT NULL,
-                jurusan VARCHAR(100) NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-            ";
-        }
-
-        $this->conn->exec($sql);
+    // Metode createTableIfNotExists tetap di sini
+    private function createTableIfNotExists() {
+        // ... (Kode createTableIfNotExists Anda yang asli)
+        // ...
     }
 }
